@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="theme-color" content="#161616"/>
+    <meta name="description" content="Design custom professional channel art, thumbnails, or avatars for YouTube One, Twitter, Facebook and more."/>
+    <link rel="Stylesheet" type="text/css" href="../../css/pz.main36.css"/>
+    <link rel="Stylesheet" type="text/css" href="../../legacy/style/jquery.min.css"/>
+    <link rel="stylesheet" type="text/css" href="../../legacy/style/jquery.gradientPicker.min.css"/>
+    <link rel="stylesheet" type="text/css" href="../../legacy/style/jquery.colorpicker.min.css"/>
+    <script src="../../ajax/libs/jquery/1-8-2/jquery.min.js"></script>
+    <script src="../../ajax/libs/jqueryui/1-10-3/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../../legacy/js/jquery.lazyload2.min.js"></script>
+    <script type="text/javascript" src="../../legacy/js/jquery.colorpicker.min.js"></script>
+    <script type="text/javascript" src="../../legacy/js/jquery.gradientPicker.min.js"></script>
+    <script type="text/javascript" src="../../legacy/js/bg3.min.js"></script>
+    <script type="text/javascript">var switchTo5x = true;</script>
+    <script type="text/javascript" src="../../button/buttons.js"></script>
+    <script type="text/javascript">stLight.options({ publisher: "1e31b11d-ba10-469f-ae7c-8305ffab2a41", doNotHash: true, doNotCopy: true, hashAddressBar: false });</script>
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-29281529-1']);
+        _gaq.push(['_trackPageview']);
+        (function () {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <script type="text/javascript">
+        var presetTemplate;
+    </script>
+    <style>
+        .selectorList {
+            list-style: none;
+            padding: 0px;
+            overflow-y: auto;
+            margin: 5px 0;
+            border: 1px solid #aaaaaa;
+            height: 101px;
+            background-color: #ffffff;
+        }
+        #fontList {
+            height: 165px;
+        }
+        .tilebutton {
+            margin: 0;
+            background-color: rgb(240, 240, 240);
+            border: 0;
+            border-bottom: 1px solid #E4E4E4;
+            width: 100%;
+            font-weight: normal;
+            color: #555555;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+            vertical-align: middle;
+            text-decoration: none;
+            font-family: Segoe UI,Verdana,Arial,sans-serif;
+            position: relative;
+            padding: 0;
+            line-height: normal;
+        }
+            .tilebutton span {
+                padding: .4em 1em;
+                display: inline-block;
+            }
+        .backtile {
+            background-image: url(../../legacy/img/backlarge.png);
+            background-repeat: no-repeat;
+            background-position: left 15px center;
+        }
+        .positionButton {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .centerButton {
+            background-image: url('../../legacy/img/center.png');
+            margin-left: 5px;
+        }
+        .pointerButton {
+            background-image: url('../../legacy/img/crosshair.png');
+            margin-left: 10px;
+        }
+        .selectorList li {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+            .selectorList li.sselected {
+                background-color: rgb(236, 236, 236);
+            }
+            .selectorList li.pselected {
+                background-color: rgb(236, 236, 236);
+            }
+            .selectorList li.fselected {
+                background-color: rgb(236, 236, 236);
+            }
+        .jspinner {
+            width: 70px;
+        }
+        .gradpicker {
+            width: 200px;
+            height: 20px;
+            margin-bottom: 32px;
+        }
+        .tabs-bottom .ui-tabs-nav {
+            clear: left;
+            padding: 0 .2em .2em .2em;
+        }
+            .tabs-bottom .ui-tabs-nav li {
+                top: auto;
+                bottom: 0;
+                margin: 0 .2em 1px 0;
+                border-bottom: auto;
+                border-top: 0;
+            }
+                .tabs-bottom .ui-tabs-nav li.ui-tabs-active {
+                    margin-top: -1px;
+                    padding-top: 1px;
+                }
+        .icontile {
+            display: inline-block;
+            width: 290px;
+            text-align: center;
+            color: #000;
+            cursor: pointer;
+            vertical-align: middle;
+            margin-bottom: 5px;
+        }
+        .middle img {
+            vertical-align: middle;
+        }
+        .delimg {
+            width: 15px;
+            height: 15px;
+            float: right;
+            margin: 4px;
+        }
+        .proprow {
+            /* width: 292px; */
+            border-bottom: 1px solid #E4E4E4;
+            padding: 5px 10px;
+            background-color: rgb(240, 240, 240);
+        }
+        .proplabel {
+            vertical-align: middle;
+            cursor: default;
+            color: #3D3D3D;
+        }
+        .editbox {
+            float: right;
+            margin-left: 3px;
+        }
+    </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", function ()
+      {
+        document.getElementById('header-menu').onclick = function (e)
+        {
+          var menu = document.getElementById('header-menunav');
+          if (menu.style.display !== 'flex')
+          {
+            menu.style.display = 'flex';
+            menu.focus();
+            e.stopPropagation();
+          }
+        }
+        window.onclick = function (e)
+        {
+          var menu = document.getElementById('header-menunav');
+          if (menu.style.display !== 'none')
+          {
+            menu.style.display = 'none';
+          }
+        }
+        window.onkeydown = function (e)
+        {
+          if (e.keyCode === 27)
+          {
+            var menu = document.getElementById('header-menunav');
+            if (menu.style.display !== 'none')
+            {
+              menu.style.display = 'none';
+            }
+          }
+        }
+      });
+    </script>
+<title>
+	Backgrounder 3 - Online Custom YouTube Background Art Generator
+</title></head>
+<body>
+      <div class="header">
+        <div class="inner">
+          <div id="header-menunav" tabindex="-1" style="display:none;">
+            <a href="/" style="flex-basis:100%;"><span>Home</span></a>
+            <a href="../../tools/clipmaker/" style="flex-basis:33.33%;background-image: url(../../img/cm_icon.png);background-position: center;background-size: cover;"><span>Clipmaker 2</span></a>
+            <a href="../../tools/backgrounder3/" style="flex-basis:33.33%;background-image: url(../../img/bg_icon_old.png);background-position: center;background-size: cover;"><span>Backgrounder 3</span></a>
+            <a href="../../tools/videoeditor/" style="flex-basis:33.33%;background-image: url(../../img/ve_icon.png);background-position: center;background-size: cover;"><span>Video Editor 1</span></a>
+            <a href="../../templates/" style="flex-basis:50%;"><span>Creations</span></a>
+            <a href="../../forum/" style="flex-basis:50%;"><span>Discussions</span></a>
+            <a href="../../about/" style="flex-basis:100%;"><span>About</span></a>
+          </div>
+          <a id="header-menu">
+            <img src="../../img/menu.svg">
+          </a><a id="header-logo" href="/">
+            <img src="../../img/logo.svg">
+          </a>
+        </div>
+      </div>
+    <div style="position: absolute; top: 63px; bottom: 0; left: 0; right: 0; overflow: hidden;">
+        <div id="editorpane" style="position: absolute; left: 0; padding: 3px; padding-bottom: 8px; top: 0px; width: 400px; background-color: rgb(197, 197, 197); bottom: 0;">
+            <div id="accordion">
+                <h3>Templates</h3>
+                <div>
+                    <a class="tilebutton" href="?"><span>Start from scratch</span></a>
+                    <a class="tilebutton" onclick="loadBGFile();"><span>Load saved template</span></a>
+                    <a class="tilebutton" onclick="downloadBGFile();"><span>Save custom template</span></a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_13/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/13.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_14/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/14.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_15/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/15.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_16/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/16.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_17/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/17.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_18/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/18.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_19/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/19.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="http://internetdealerservices.com">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/1.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_2/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/2.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_3/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/3.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_4/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/4.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_5/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/5.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_6/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/6.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_7/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/7.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_8/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/8.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_9/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/9.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_10/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/10.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_11/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/11.png"/>
+                    </a></li>
+                            </a>
+                    <a class="tilebutton" href="../../tools/backgrounder3/t_12/">
+                        <img style="border: 0; padding: 5px;" width="225" height="127" src="../../legacy/bg/preset_templates/12.png"/>
+                    </a></li>
+                            </a>
+                    <div style="clear: both;"></div>
+                </div>
+                <h3>Basics</h3>
+                <div>
+                    <div id="basicsproperties"></div>
+                </div>
+                <h3>Layer 1</h3>
+                <div id="bglayer1tab">
+                    <div id="bg1_pages">
+                        <div id="bg1_page1">
+                            <a class="icontile bgbutton" style="background-image: url('../../legacy/img/upload.png'); background-repeat: no-repeat; background-position: left 20px center; padding-top: 33px; padding-bottom: 33px; display: block; margin: auto; background-color: transparent; border: none; width: 100%; border-bottom: 1px solid #D8D8D8;" onclick="BGlayers[0].type = 1; switchBG(0); redrawBGnum(0);">Upload an image</a>
+                            <a class="icontile bgbutton" style="background-image: url('../../legacy/img/pattern.png'); background-repeat: no-repeat; background-position: left 20px center; padding-top: 33px; padding-bottom: 33px; display: block; margin: auto; background-color: transparent; border: none; width: 100%; border-bottom: 1px solid #D8D8D8;" onclick="BGlayers[0].type = 2; switchBG(0); redrawBGnum(0);">Preset texture/pattern</a>
+                            <a class="icontile bgbutton" style="background-image: url('../../legacy/img/generate.png'); background-repeat: no-repeat; background-position: left 20px center; padding-top: 33px; padding-bottom: 33px; display: block; margin: auto; background-color: transparent; border: none; width: 100%;" onclick="BGlayers[0].type = 3; BGlayers[0].generator = 0; switchBG(0);">Generate an image</a>
+                        </div>
+                        <div id="bg1_page2" style="display: none;">
+                            <a class="tilebutton backtile" onclick="BGlayers[0].type = 0; switchBG(0);"><span>Choose something else</span></a>
+                            <a class="tilebutton" onclick="BGlayers[0].generator = 1; redrawBGnum(0); switchBG(0);"><span>Gradient</span></a>
+                            <a class="tilebutton" onclick="BGlayers[0].generator = 2; redrawBGnum(0); switchBG(0);"><span>Sunburst</span></a>
+                            <a class="tilebutton" onclick="BGlayers[0].generator = 3; redrawBGnum(0); switchBG(0);"><span>Lines</span></a>
+                            <a class="tilebutton" onclick="BGlayers[0].generator = 4; redrawBGnum(0); switchBG(0);"><span>Checkers</span></a>
+                            <a class="tilebutton" onclick="BGlayers[0].generator = 5; redrawBGnum(0); switchBG(0);"><span>Scribble</span></a>
+                            <a class="tilebutton" onclick="BGlayers[0].generator = 8; redrawBGnum(0); switchBG(0);"><span>Lightning</span></a>
+                            <a class="tilebutton" onclick="BGlayers[0].generator = 10; redrawBGnum(0); switchBG(0);"><span>Noise</span></a>
+                            <a class="tilebutton" onclick="BGlayers[0].generator = 11; redrawBGnum(0); switchBG(0);"><span>Clouds</span></a>
+                        </div>
+                        <div id="bg1_page3" style="display: none;">
+                            <a class="tilebutton backtile" onclick="if (BGlayers[0].type == 3) {BGlayers[0].generator = 0; switchBG(0);} else {BGlayers[0].type = 0; switchBG(0);} redrawBGnum(0);"><span>Choose something else</span></a>
+                            <div id="bg1properties">
+                            </div>
+                            <a style="color: blue; text-decoration: none; padding: 5px 0; text-align: center; width: 100%; display: block;" target="_blank" href="../../forum/yaf_topics20_Tutorials/">Need help? Click for tutorials</a>
+                        </div>
+                    </div>
+                </div>
+                <h3>Layer 2</h3>
+                <div id="bglayer2tab">
+                    <div id="bg2_pages">
+                        <div id="bg2_page1">
+                            <a class="icontile bgbutton" style="background-image: url('../../legacy/img/upload.png'); background-repeat: no-repeat; background-position: left 20px center; padding-top: 33px; padding-bottom: 33px; display: block; margin: auto; background-color: transparent; border: none; width: 100%; border-bottom: 1px solid #D8D8D8;" onclick="BGlayers[1].type = 1; switchBG(1); redrawBGnum(1)">Upload an image</ac>
+                                <a class="icontile bgbutton" style="background-image: url('../../legacy/img/pattern.png'); background-repeat: no-repeat; background-position: left 20px center; padding-top: 33px; padding-bottom: 33px; display: block; margin: auto; background-color: transparent; border: none; width: 100%; border-bottom: 1px solid #D8D8D8;" onclick="BGlayers[1].type = 2; switchBG(1); redrawBGnum(1);">Preset texture/pattern</a>
+                                <a class="icontile bgbutton" style="background-image: url('../../legacy/img/generate.png'); background-repeat: no-repeat; background-position: left 20px center; padding-top: 33px; padding-bottom: 33px; display: block; margin: auto; background-color: transparent; border: none; width: 100%;" onclick="BGlayers[1].type = 3; BGlayers[1].generator = 0; switchBG(1);">Generate an image</a>
+                        </div>
+                        <div id="bg2_page2" style="display: none;">
+                            <a class="tilebutton backtile" onclick="BGlayers[1].type = 0; switchBG(1);"><span>Choose something else</span></a>
+                            <a class="tilebutton" onclick="BGlayers[1].generator = 1; redrawBGnum(1); switchBG(1);"><span>Gradient</span></a>
+                            <a class="tilebutton" onclick="BGlayers[1].generator = 2; redrawBGnum(1); switchBG(1);"><span>Sunburst</span></a>
+                            <a class="tilebutton" onclick="BGlayers[1].generator = 3; redrawBGnum(1); switchBG(1);"><span>Lines</span></a>
+                            <a class="tilebutton" onclick="BGlayers[1].generator = 4; redrawBGnum(1); switchBG(1);"><span>Checkers</span></a>
+                            <a class="tilebutton" onclick="BGlayers[1].generator = 5; redrawBGnum(1); switchBG(1);"><span>Scribble</span></a>
+                            <a class="tilebutton" onclick="BGlayers[1].generator = 8; redrawBGnum(1); switchBG(1);"><span>Lightning</span></a>
+                            <a class="tilebutton" onclick="BGlayers[1].generator = 10; redrawBGnum(1); switchBG(1);"><span>Noise</span></a>
+                            <a class="tilebutton" onclick="BGlayers[1].generator = 11; redrawBGnum(1); switchBG(1);"><span>Clouds</span></a>
+                        </div>
+                        <div id="bg2_page3" style="display: none;">
+                            <a class="tilebutton backtile" onclick="if (BGlayers[1].type == 3) {BGlayers[1].generator = 0; switchBG(1);} else {BGlayers[1].type = 0; switchBG(1);} redrawBGnum(1);"><span>Choose something else</span></a>
+                            <div id="bg2properties"></div>
+                            <a style="color: blue; text-decoration: none; padding: 5px 0; text-align: center; width: 100%; display: block;" target="_blank" href="../../forum/yaf_topics20_Tutorials/">Need help? Click for tutorials</a>
+                        </div>
+                    </div>
+                </div>
+                <h3>Overlays</h3>
+                <div>
+                    <div id="overlaysproperties"></div>
+                </div>
+                <h3>Text + Images</h3>
+                <div style="position: relative;">
+                    <div class="proprow" style="background-color: #FAFAFA;">
+                        <ul id="spriteList" class="selectorList"></ul>
+                        <a style="cursor: pointer;" onclick="addSprite(0)" title="add text">
+                            <img src="../../legacy/img/addtext.png"/></a>
+                        <a style="cursor: pointer;" onclick="addSprite(1)" title="add image">
+                            <img src="../../legacy/img/addimg.png"/></a>
+                    </div>
+                    <div style="position: absolute; top: 153px; left: 0; right: 0; bottom: 0; overflow-y: auto;" id="spriteproperties"></div>
+                </div>
+                <h3>About</h3>
+                <div>
+                    <div style="margin: auto; width: 90%; margin-top: 15px; margin-bottom: 10px;">
+                        <span style="font-weight: bold;">Backgrounder 3</span><br/>
+                        Copyright 2014 Panzoid<br/>
+                        <br/>
+                        <span style="font-weight: bold;"><a target="_blank" style="color: blue;" href="../../tools/feedback/">Send us your feedback</a>, we use it to make better things for you.</span><br/>
+                        <br/>
+                        <span style="font-weight: bold;">Need help? <a target="_blank" style="color: blue;" href="../../forum/yaf_topics20_Tutorials/">Backgrounder 3 tutorials</a></span><br/>
+                        <br/>
+                        <span style="font-size: 11px;">
+                            <a href="http://thenounproject.com/noun/pattern/#icon-No8750" target="_blank">Pattern</a> designed by <a href="http://thenounproject.com/Mikhail1986" target="_blank">Michael Rowe</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/design/#icon-No9350" target="_blank">Design</a> designed by <a href="http://thenounproject.com/iconify" target="_blank">Scott Lewis</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/back/#icon-No8301" target="_blank">Back</a> designed by <a href="http://thenounproject.com/chapmanjw" target="_blank">John Chapman</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/refresh/#icon-No2223" target="_blank">Refresh</a> designed by <a href="http://thenounproject.com/jorishoogendoorn" target="_blank">Joris Hoogendoorn</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/picture/#icon-No8206" target="_blank">Picture</a> designed by <a href="http://thenounproject.com/chrisclausie" target="_blank">Chris Clausen</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/text/#icon-No8326" target="_blank">Text</a> designed by <a href="http://thenounproject.com/HenrikLundMikkelsen" target="_blank">Henrik LM</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/dice/#icon-No454" target="_blank">Dice</a>  from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/crosshair/#icon-No5622" target="_blank">Crosshair</a> designed by <a href="http://thenounproject.com/naomiatkinson" target="_blank">Naomi Atkinson</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/center/#icon-No20031" target="_blank">Center</a> designed by <a href="http://thenounproject.com/eprieditis" target="_blank">Prieditis Eduards</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/graphic/#icon-No6497" target="_blank">Graphic</a> designed by <a href="http://thenounproject.com/mateozlatar" target="_blank">Mateo Zlatar</a> from The Noun Project<br/>
+                        </span>
+                        <br/>
+                        <a href="../../about/terms/" id="body_fTerms">Terms</a> | <a href="../../about/privacy/" id="body_fPrivacy">Privacy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul id="presetImageList" style="display: none; max-height: 187px;" class="selectorList">
+            <li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0; background-image:url(../../legacy/bg/preset_bg/1.png)" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0; background-image:url(../../legacy/bg/preset_bg/10.png)" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0; background-image:url(../../legacy/bg/preset_bg/11.png)" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li><li class="presetimgs"><div class="lazy" style="width:100%; height:50px; border:0;" > </div></li>
+        </ul>
+        <ul style="display: none;" id="fontList" class="selectorList">
+            <li class="presetfonts"><span style="font-family: Arial; font-size: 20px;" font="Arial">Arial</span></li>
+            <li class="presetfonts"><span style="font-family: Impact; font-size: 20px;" font="Impact">Impact</span></li>
+            <li class="presetfonts"><span style="font-family: Verdana; font-size: 20px;" font="Verdana">Verdana</span></li>
+            <li class="presetfonts"><span style="font-family: Consolas; font-size: 20px;" font="Consolas">Consolas</span></li>
+            <li class="presetfonts"><span style="font-size:20px; font-family: Adventure;" class="lazy" font="Adventure">Adventure</span></li><li class="presetfonts"><span style="font-size:20px; font-family: almontesnow;" class="lazy" font="almontesnow">almontesnow</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Another barcode font;" class="lazy" font="Another barcode font">Another barcode font</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Arcadepix;" class="lazy" font="Arcadepix">Arcadepix</span></li><li class="presetfonts"><span style="font-size:20px; font-family: basica;" class="lazy" font="basica">basica</span></li><li class="presetfonts"><span style="font-size:20px; font-family: bebas;" class="lazy" font="bebas">bebas</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Birmingham;" class="lazy" font="Birmingham">Birmingham</span></li><li class="presetfonts"><span style="font-size:20px; font-family: borisblackbloxx;" class="lazy" font="borisblackbloxx">borisblackbloxx</span></li><li class="presetfonts"><span style="font-size:20px; font-family: btseps2;" class="lazy" font="btseps2">btseps2</span></li><li class="presetfonts"><span style="font-size:20px; font-family: carbonchaos;" class="lazy" font="carbonchaos">carbonchaos</span></li><li class="presetfonts"><span style="font-size:20px; font-family: ComicBook;" class="lazy" font="ComicBook">ComicBook</span></li><li class="presetfonts"><span style="font-size:20px; font-family: cs;" class="lazy" font="cs">cs</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Danger Diabolik;" class="lazy" font="Danger Diabolik">Danger Diabolik</span></li><li class="presetfonts"><span style="font-size:20px; font-family: DIRTYEGO;" class="lazy" font="DIRTYEGO">DIRTYEGO</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Double Feature;" class="lazy" font="Double Feature">Double Feature</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Elementary Gothic;" class="lazy" font="Elementary Gothic">Elementary Gothic</span></li><li class="presetfonts"><span style="font-size:20px; font-family: English;" class="lazy" font="English">English</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Filxgirl;" class="lazy" font="Filxgirl">Filxgirl</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Firty Free;" class="lazy" font="Firty Free">Firty Free</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Freshman;" class="lazy" font="Freshman">Freshman</span></li><li class="presetfonts"><span style="font-size:20px; font-family: gunplay;" class="lazy" font="gunplay">gunplay</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Harabara;" class="lazy" font="Harabara">Harabara</span></li><li class="presetfonts"><span style="font-size:20px; font-family: headthinker;" class="lazy" font="headthinker">headthinker</span></li><li class="presetfonts"><span style="font-size:20px; font-family: I Love What You Do;" class="lazy" font="I Love What You Do">I Love What You Do</span></li><li class="presetfonts"><span style="font-size:20px; font-family: ifinkyoufreeky;" class="lazy" font="ifinkyoufreeky">ifinkyoufreeky</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Irish Uncialfabeta;" class="lazy" font="Irish Uncialfabeta">Irish Uncialfabeta</span></li><li class="presetfonts"><span style="font-size:20px; font-family: JandaManateeSolid;" class="lazy" font="JandaManateeSolid">JandaManateeSolid</span></li><li class="presetfonts"><span style="font-size:20px; font-family: JennaSue;" class="lazy" font="JennaSue">JennaSue</span></li><li class="presetfonts"><span style="font-size:20px; font-family: jhiaxus;" class="lazy" font="jhiaxus">jhiaxus</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Jungle Junk;" class="lazy" font="Jungle Junk">Jungle Junk</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Karate;" class="lazy" font="Karate">Karate</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Little days;" class="lazy" font="Little days">Little days</span></li><li class="presetfonts"><span style="font-size:20px; font-family: MB Underground;" class="lazy" font="MB Underground">MB Underground</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Minercraftory;" class="lazy" font="Minercraftory">Minercraftory</span></li><li class="presetfonts"><span style="font-size:20px; font-family: mousou;" class="lazy" font="mousou">mousou</span></li><li class="presetfonts"><span style="font-size:20px; font-family: old london;" class="lazy" font="old london">old london</span></li><li class="presetfonts"><span style="font-size:20px; font-family: optimusprinceps;" class="lazy" font="optimusprinceps">optimusprinceps</span></li><li class="presetfonts"><span style="font-size:20px; font-family: powerchord;" class="lazy" font="powerchord">powerchord</span></li><li class="presetfonts"><span style="font-size:20px; font-family: propaganda;" class="lazy" font="propaganda">propaganda</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Punks not dead;" class="lazy" font="Punks not dead">Punks not dead</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Razing;" class="lazy" font="Razing">Razing</span></li><li class="presetfonts"><span style="font-size:20px; font-family: revolution;" class="lazy" font="revolution">revolution</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Sierra Madre;" class="lazy" font="Sierra Madre">Sierra Madre</span></li><li class="presetfonts"><span style="font-size:20px; font-family: splendidplan;" class="lazy" font="splendidplan">splendidplan</span></li><li class="presetfonts"><span style="font-size:20px; font-family: squareddisplay;" class="lazy" font="squareddisplay">squareddisplay</span></li><li class="presetfonts"><span style="font-size:20px; font-family: travelingtypewriter;" class="lazy" font="travelingtypewriter">travelingtypewriter</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Triforce;" class="lazy" font="Triforce">Triforce</span></li><li class="presetfonts"><span style="font-size:20px; font-family: us101;" class="lazy" font="us101">us101</span></li><li class="presetfonts"><span style="font-size:20px; font-family: Velocette;" class="lazy" font="Velocette">Velocette</span></li><li class="presetfonts"><span style="font-size:20px; font-family: wideawake;" class="lazy" font="wideawake">wideawake</span></li><li class="presetfonts"><span style="font-size:20px; font-family: xirod;" class="lazy" font="xirod">xirod</span></li><li class="presetfonts"><span style="font-size:20px; font-family: zentropa;" class="lazy" font="zentropa">zentropa</span></li>
+        </ul>
+        <div id="previewpane" style="position: absolute; left: 408px; right: 0; top: 0px; bottom: 0px; background-color: rgb(197, 197, 197); overflow: hidden;">
+            <div style="height: 90px; background-color: #444; top: 0; right: 0; left: 0; position: relative; overflow: hidden;">
+                <div style="float: left;">
+                    <script async src="../../pagead/js/adsbygoogle.js"></script>
+                    <!-- forum -->
+                    <ins class="adsbygoogle" style="display: inline-block; width: 728px; height: 90px" data-ad-client="ca-pub-8816130952124934" data-ad-slot="4078006153"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+                <div style="position: absolute; left: 732px; top: 7px; height: 73px; overflow: hidden;">
+                    <span class="st_facebook_vcount" displaytext="Facebook"></span>
+                    <span class="st_fblike_vcount" displaytext="Facebook Like"></span>
+                    <span class="st_twitter_vcount" displaytext="Tweet"></span>
+                    <span class="st_googleplus_vcount" displaytext="Google +"></span>
+                    <span class="st_pinterest_vcount" displaytext="Pinterest"></span>
+                    <span class="st_email_vcount" displaytext="Email"></span>
+                </div>
+            </div>
+            <div style="height: 25px; padding-top: 3px; font-family: 'Segoe UI',Verdana,Arial,sans-serif; text-align: center; font-size: 15px; background-color: #476F01; color: white; top: 0px; right: 0; left: 0; position: relative; overflow: hidden;">
+                The new Backgrounder preview is now available! <a href="../../tools/backgrounder/" target="_blank" style="color: white;">Click here to try Backgrounder 4.</a>
+            </div>
+            <canvas id="c_backgrounder" style="position: relative;">Your browser does not support Backgrounder 3.</canvas>
+            <div style="height: 60px; background-color: #444; bottom: 0; right: 0; left: 0; position: absolute; overflow: hidden;">
+                <a id="dlbutton" style="float: left; margin: 10px;" onclick="downloadBG(fullImgWidth, fullImgHeight);">Download Your Background</a>
+                <div style="float: left;">
+                    <script async src="../../pagead/js/adsbygoogle.js"></script>
+                    <!-- top -->
+                    <ins class="adsbygoogle" style="display: inline-block; width: 468px; height: 60px" data-ad-client="ca-pub-8816130952124934" data-ad-slot="6924551190"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div id="renderdialog" style="display: none; z-index: 2000; width: 500px; height: 120px; position: absolute; background: rgb(231, 231, 231); padding: 8px; border: 1px solid rgb(43, 43, 43); color: #3C3C3C;">
+            <span id="rendertitle" style="font-family: Segoe UI,Verdana,Arial,sans-serif; font-size: 22px;">Rendering...</span>
+            <div id="renderprogress">
+            </div>
+            <a style="position: absolute; right: 6px; margin-top: 5px;" id="downloaddialog">Download</a>
+            <a onclick="finishRender();" style="position: absolute; right: 132px; margin-top: 5px;" id="closedialog">Close</a>
+            <a onclick="renderCancel=true;" style="position: absolute; right: 6px; margin-top: 5px;" id="cancelrender">Cancel</a>
+            <a style="cursor: pointer; display: block; margin-top: 5px; color: blue;" id="brokendialog">Click here if your download didn't work</a>
+        </div>
+        <div id="mask" style="display: none; z-index: 1999; position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: rgba(0,0,0,0.5);">
+        </div>
+</body>
+</html>
