@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="theme-color" content="#161616"/>
+    <meta name="description" content="Design a custom, free, professional intro, title, or video clip for YouTube and more."/>
+    <link rel="Stylesheet" type="text/css" href="css/pz.main36.css"/>
+    <link rel="stylesheet" type="text/css" href="legacy/style/pz-tools.min.css"/>
+    <link rel="Stylesheet" type="text/css" href="legacy/style/jquery.min.css"/>
+    <link rel="stylesheet" type="text/css" href="legacy/style/jquery.gradientPicker.min.css"/>
+    <link rel="stylesheet" type="text/css" href="legacy/style/jquery.colorpicker.min.css"/>
+    <script src="ajax/libs/jquery/2-1-1/jquery.min.js"></script>
+    <script src="ajax/libs/jqueryui/1-10-3/jquery-ui.min.js"></script>
+    <script src="ajax/libs/three-js/r68/three.min.js"></script>
+    <script src="legacy/im/RenderPass.min.js"></script>
+    <script src="legacy/im/ShaderPass.min.js"></script>
+    <script src="legacy/im/EffectComposer.min.js"></script>
+    <script type="text/javascript" src="legacy/js/jquery.colorpicker.min.js"></script>
+    <script type="text/javascript" src="legacy/js/pzeditor.min.js"></script>
+    <script type="text/javascript" src="legacy/js/introm.min.js"></script>
+    <script type="text/javascript" src="legacy/js/avi.min.js"></script>
+    <script type="text/javascript" src="legacy/js/tween.min.js"></script>
+    <script type="text/javascript" src="legacy/js/objects.min.js"></script>
+    <script type="text/javascript">var switchTo5x = true;</script>
+    <script type="text/javascript" src="button/buttons.js"></script>
+    <script type="text/javascript">stLight.options({ publisher: "1e31b11d-ba10-469f-ae7c-8305ffab2a41", doNotHash: true, doNotCopy: true, hashAddressBar: false });</script>
+    <script id="vertexShader" type="x-shader/x-vertex">
+        #define PHONG
+varying vec3 vViewPosition;
+varying vec3 vNormal;
+varying vec2 vUv;
+#if defined( USE_MAP ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( USE_SPECULARMAP ) || defined( USE_ALPHAMAP )
+	uniform vec4 offsetRepeat;
+#endif
+#ifdef USE_LIGHTMAP
+	varying vec2 vUv2;
+#endif
+#if defined( USE_ENVMAP ) && ! defined( USE_BUMPMAP ) && ! defined( USE_NORMALMAP )
+	varying vec3 vReflect;
+	uniform float refractionRatio;
+	uniform bool useRefract;
+#endif
+#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_ENVMAP )
+	varying vec3 vWorldPosition;
+#endif
+#ifdef USE_COLOR
+	varying vec3 vColor;
+#endif
+#ifdef USE_MORPHTARGETS
+	#ifndef USE_MORPHNORMALS
+	uniform float morphTargetInfluences[ 8 ];
+	#else
+	uniform float morphTargetInfluences[ 4 ];
+	#endif
+#endif
+#ifdef USE_SKINNING
+	uniform mat4 bindMatrix;
+	uniform mat4 bindMatrixInverse;
+	#ifdef BONE_TEXTURE
+		uniform sampler2D boneTexture;
+		uniform int boneTextureWidth;
+		uniform int boneTextureHeight;
+		mat4 getBoneMatrix( const in float i ) {
+			float j = i * 4.0;
+			float x = mod( j, float( boneTextureWidth ) );
+			float y = floor( j / float( boneTextureWidth ) );
+			float dx = 1.0 / float( boneTextureWidth );
+			float dy = 1.0 / float( boneTextureHeight );
+			y = dy * ( y + 0.5 );
+			vec4 v1 = texture2D( boneTexture, vec2( dx * ( x + 0.5 ), y ) );
+			vec4 v2 = texture2D( boneTexture, vec2( dx * ( x + 1.5 ), y ) );
+			vec4 v3 = texture2D( boneTexture, vec2( dx * ( x + 2.5 ), y ) );
+			vec4 v4 = texture2D( boneTexture, vec2( dx * ( x + 3.5 ), y ) );
+			mat4 bone = mat4( v1, v2, v3, v4 );
+			return bone;
+		}
+	#else
+		uniform mat4 boneGlobalMatrices[ MAX_BONES ];
+		mat4 getBoneMatrix( const in float i ) {
+			mat4 bone = boneGlobalMatrices[ int(i) ];
+			return bone;
+		}
+	#endif
+#endif
+#ifdef USE_SHADOWMAP
+	varying vec4 vShadowCoord[ MAX_SHADOWS ];
+	uniform mat4 shadowMatrix[ MAX_SHADOWS ];
+#endif
+#ifdef USE_LOGDEPTHBUF
+	#ifdef USE_LOGDEPTHBUF_EXT
+		varying float vFragDepth;
+	#endif
+	uniform float logDepthBufFC;
+#endif
+void main() {
+        vUv = uv;
+#if defined( USE_MAP ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( USE_SPECULARMAP ) || defined( USE_ALPHAMAP )
+	//vUv = uv * offsetRepeat.zw + offsetRepeat.xy;
+#endif
+#ifdef USE_LIGHTMAP
+	vUv2 = uv2;
+#endif
+#ifdef USE_COLOR
+	#ifdef GAMMA_INPUT
+		vColor = color * color;
+	#else
+		vColor = color;
+	#endif
+#endif
+#ifdef USE_MORPHNORMALS
+	vec3 morphedNormal = vec3( 0.0 );
+	morphedNormal += ( morphNormal0 - normal ) * morphTargetInfluences[ 0 ];
+	morphedNormal += ( morphNormal1 - normal ) * morphTargetInfluences[ 1 ];
+	morphedNormal += ( morphNormal2 - normal ) * morphTargetInfluences[ 2 ];
+	morphedNormal += ( morphNormal3 - normal ) * morphTargetInfluences[ 3 ];
+	morphedNormal += normal;
+#endif
+#ifdef USE_SKINNING
+	mat4 boneMatX = getBoneMatrix( skinIndex.x );
+	mat4 boneMatY = getBoneMatrix( skinIndex.y );
+	mat4 boneMatZ = getBoneMatrix( skinIndex.z );
+	mat4 boneMatW = getBoneMatrix( skinIndex.w );
+#endif
+#ifdef USE_SKINNING
+	mat4 skinMatrix = mat4( 0.0 );
+	skinMatrix += skinWeight.x * boneMatX;
+	skinMatrix += skinWeight.y * boneMatY;
+	skinMatrix += skinWeight.z * boneMatZ;
+	skinMatrix += skinWeight.w * boneMatW;
+	skinMatrix  = bindMatrixInverse * skinMatrix * bindMatrix;
+	#ifdef USE_MORPHNORMALS
+	vec4 skinnedNormal = skinMatrix * vec4( morphedNormal, 0.0 );
+	#else
+	vec4 skinnedNormal = skinMatrix * vec4( normal, 0.0 );
+	#endif
+#endif
+vec3 objectNormal;
+#ifdef USE_SKINNING
+	objectNormal = skinnedNormal.xyz;
+#endif
+#if !defined( USE_SKINNING ) && defined( USE_MORPHNORMALS )
+	objectNormal = morphedNormal;
+#endif
+#if !defined( USE_SKINNING ) && ! defined( USE_MORPHNORMALS )
+	objectNormal = normal;
+#endif
+#ifdef FLIP_SIDED
+	objectNormal = -objectNormal;
+#endif
+vec3 transformedNormal = normalMatrix * objectNormal;
+	vNormal = normalize( transformedNormal );
+#ifdef USE_MORPHTARGETS
+	vec3 morphed = vec3( 0.0 );
+	morphed += ( morphTarget0 - position ) * morphTargetInfluences[ 0 ];
+	morphed += ( morphTarget1 - position ) * morphTargetInfluences[ 1 ];
+	morphed += ( morphTarget2 - position ) * morphTargetInfluences[ 2 ];
+	morphed += ( morphTarget3 - position ) * morphTargetInfluences[ 3 ];
+	#ifndef USE_MORPHNORMALS
+	morphed += ( morphTarget4 - position ) * morphTargetInfluences[ 4 ];
+	morphed += ( morphTarget5 - position ) * morphTargetInfluences[ 5 ];
+	morphed += ( morphTarget6 - position ) * morphTargetInfluences[ 6 ];
+	morphed += ( morphTarget7 - position ) * morphTargetInfluences[ 7 ];
+	#endif
+	morphed += position;
+#endif
+#ifdef USE_SKINNING
+	#ifdef USE_MORPHTARGETS
+	vec4 skinVertex = bindMatrix * vec4( morphed, 1.0 );
+	#else
+	vec4 skinVertex = bindMatrix * vec4( position, 1.0 );
+	#endif
+	vec4 skinned = vec4( 0.0 );
+	skinned += boneMatX * skinVertex * skinWeight.x;
+	skinned += boneMatY * skinVertex * skinWeight.y;
+	skinned += boneMatZ * skinVertex * skinWeight.z;
+	skinned += boneMatW * skinVertex * skinWeight.w;
+	skinned  = bindMatrixInverse * skinned;
+#endif
+vec4 mvPosition;
+#ifdef USE_SKINNING
+	mvPosition = modelViewMatrix * skinned;
+#endif
+#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS )
+	mvPosition = modelViewMatrix * vec4( morphed, 1.0 );
+#endif
+#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS )
+	mvPosition = modelViewMatrix * vec4( position, 1.0 );
+#endif
+gl_Position = projectionMatrix * mvPosition;
+#ifdef USE_LOGDEPTHBUF
+	gl_Position.z = log2(max(1e-6, gl_Position.w + 1.0)) * logDepthBufFC;
+	#ifdef USE_LOGDEPTHBUF_EXT
+		vFragDepth = 1.0 + gl_Position.w;
+#else
+		gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;
+	#endif
+#endif
+	vViewPosition = -mvPosition.xyz;
+#if defined( USE_ENVMAP ) || defined( PHONG ) || defined( LAMBERT ) || defined ( USE_SHADOWMAP )
+	#ifdef USE_SKINNING
+		vec4 worldPosition = modelMatrix * skinned;
+	#endif
+	#if defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )
+		vec4 worldPosition = modelMatrix * vec4( morphed, 1.0 );
+	#endif
+	#if ! defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )
+		vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+	#endif
+#endif
+#if defined( USE_ENVMAP ) && ! defined( USE_BUMPMAP ) && ! defined( USE_NORMALMAP )
+	vec3 worldNormal = mat3( modelMatrix[ 0 ].xyz, modelMatrix[ 1 ].xyz, modelMatrix[ 2 ].xyz ) * objectNormal;
+	worldNormal = normalize( worldNormal );
+	vec3 cameraToVertex = normalize( worldPosition.xyz - cameraPosition );
+	if ( useRefract ) {
+		vReflect = refract( cameraToVertex, worldNormal, refractionRatio );
+	} else {
+		vReflect = reflect( cameraToVertex, worldNormal );
+	}
+#endif
+#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_ENVMAP )
+	vWorldPosition = worldPosition.xyz;
+#endif
+#ifdef USE_SHADOWMAP
+	for( int i = 0; i < MAX_SHADOWS; i ++ ) {
+		vShadowCoord[ i ] = shadowMatrix[ i ] * worldPosition;
+	}
+#endif
+}
+    </script>
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-29281529-1']);
+        _gaq.push(['_trackPageview']);
+        (function () {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <style>
+        #frameslider a {
+            border: 1px solid rgb(99, 95, 95);
+            top: -1px;
+            height: 100%;
+        }
+        #frameslider canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .sprite-add {
+            background-position: 0 0;
+            width: 20px;
+            height: 20px;
+            right: 50px;
+        }
+        .sprite-box {
+            background-position: 0 -70px;
+            width: 24px;
+            height: 24px;
+        }
+        .sprite-close {
+            background-position: 0 -224px;
+            width: 20px;
+            height: 20px;
+            right: 50px;
+        }
+        .sprite-closesmall {
+            background-position: 0 -294px;
+            width: 15px;
+            height: 15px;
+        }
+        .sprite-first {
+            background-position: 0 -359px;
+            width: 20px;
+            height: 20px;
+            right: 100px;
+        }
+        .sprite-last {
+            background-position: 0 -429px;
+            width: 20px;
+            height: 20px;
+            right: 0;
+        }
+        .sprite-light {
+            background-position: 0 -499px;
+            width: 24px;
+            height: 24px;
+        }
+        .sprite-moveleft {
+            background-position: 0 -573px;
+            width: 20px;
+            height: 20px;
+            right: 75px;
+        }
+        .sprite-moveright {
+            background-position: 0 -643px;
+            width: 20px;
+            height: 20px;
+            right: 25px;
+        }
+        .sprite-particles {
+            background-position: 0 -713px;
+            width: 24px;
+            height: 24px;
+        }
+        .sprite-playpause {
+            background-position: 0 -790px;
+            width: 29px;
+            height: 25px;
+            background-image: url(legacy/img/csg-52d9b06421928.png);
+            background-repeat: no-repeat;
+        }
+        .sprite-shape {
+            background-position: 0 -867px;
+            width: 24px;
+            height: 24px;
+        }
+        .sprite-text {
+            background-position: 0 -941px;
+            width: 24px;
+            height: 24px;
+        }
+        .sprite-timeinvert {
+            background-position: 0 -1015px;
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 5px;
+            background-image: url(legacy/img/csg-52d9b06421928.png);
+            background-repeat: no-repeat;
+            display: inline-block;
+        }
+        .sprite-caminvert {
+            background-position: 0 -150px;
+            width: 30px;
+            height: 20px;
+            background-image: url(legacy/img/csg-52d9b06421928.png);
+            background-repeat: no-repeat;
+        }
+        .addbutton {
+            background-image: url(legacy/img/csg-52d9b06421928.png);
+            background-repeat: no-repeat;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .toolbarButton {
+            display: inline-block;
+            cursor: pointer;
+            vertical-align: middle;
+            background-image: url(legacy/img/csg-52d9b06421928.png);
+            background-repeat: no-repeat;
+            position: absolute;
+        }
+        .jspinner {
+            width: 60px;
+        }
+        .tabs-bottom .ui-tabs-nav {
+            clear: left;
+            padding: 0 .2em .2em .2em;
+        }
+            .tabs-bottom .ui-tabs-nav li {
+                top: auto;
+                bottom: 0;
+                margin: 0 .2em 1px 0;
+                border-bottom: auto;
+                border-top: 0;
+            }
+                .tabs-bottom .ui-tabs-nav li.ui-tabs-active {
+                    margin-top: -1px;
+                    padding-top: 1px;
+                }
+        .templatelist {
+            border: 0;
+            padding: 10px;
+            list-style: none;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+            .templatelist li {
+                width: 200px;
+                padding: 4px;
+                cursor: pointer;
+                background-color: #e6e6e6;
+                border: 1px solid #cecece;
+                margin-bottom: 4px;
+                margin-right: 8px;
+            }
+    </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", function ()
+      {
+        document.getElementById('header-menu').onclick = function (e)
+        {
+          var menu = document.getElementById('header-menunav');
+          if (menu.style.display !== 'flex')
+          {
+            menu.style.display = 'flex';
+            menu.focus();
+            e.stopPropagation();
+          }
+        }
+        window.onclick = function (e)
+        {
+          var menu = document.getElementById('header-menunav');
+          if (menu.style.display !== 'none')
+          {
+            menu.style.display = 'none';
+          }
+        }
+        window.onkeydown = function (e)
+        {
+          if (e.keyCode === 27)
+          {
+            var menu = document.getElementById('header-menunav');
+            if (menu.style.display !== 'none')
+            {
+              menu.style.display = 'none';
+            }
+          }
+        }
+      });
+    </script>
+<title>
+	Clipmaker - Online Custom Video Intro/Clip Generator
+</title></head>
+<body>
+      <div class="header">
+        <div class="inner">
+          <div id="header-menunav" tabindex="-1" style="display:none;">
+            <a href="/" style="flex-basis:100%;"><span>Home</span></a>
+            <a href="tools/clipmaker/" style="flex-basis:33.33%;background-image: url(img/cm_icon.png);background-position: center;background-size: cover;"><span>Clipmaker 2</span></a>
+            <a href="tools/backgrounder3/" style="flex-basis:33.33%;background-image: url(img/bg_icon_old.png);background-position: center;background-size: cover;"><span>Backgrounder 3</span></a>
+            <a href="tools/videoeditor/" style="flex-basis:33.33%;background-image: url(img/ve_icon.png);background-position: center;background-size: cover;"><span>Video Editor 1</span></a>
+            <a href="templates/" style="flex-basis:50%;"><span>Creations</span></a>
+            <a href="forum/" style="flex-basis:50%;"><span>Discussions</span></a>
+            <a href="about/" style="flex-basis:100%;"><span>About</span></a>
+          </div>
+          <a id="header-menu">
+            <img src="img/menu.svg">
+          </a><a id="header-logo" href="/">
+            <img src="img/logo.svg">
+          </a>
+        </div>
+      </div>
+    <div style="position: absolute; top: 63px; bottom: 0; left: 0; right: 0; overflow: hidden;">
+        <div id="editorpane" style="position: absolute; left: 0; padding: 3px; padding-bottom: 8px; top: 0px; width: 400px; background-color: rgb(197, 197, 197); bottom: 0;">
+            <div id="accordion">
+                <h3>Templates</h3>
+                <div>
+                    <a class="tilebutton" href="?"><span>Start from scratch</span></a>
+                    <div id="templatelist">
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <h3>Basics</h3>
+                <div>
+                    <div id="basicsproperties">
+                    </div>
+                </div>
+                <h3>Scene</h3>
+                <div>
+                    <div id="scenepages">
+                        <div id="scene_page0">
+                        </div>
+                        <div id="scene_page1" style="display: none;">
+                            <a class="tilebutton backtile" onclick="CM.scenes.change();"><span>Choose something else</span></a>
+                            <div id="sceneproperties">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Objects</h3>
+                <div style="position: relative;">
+                    <div class="proprow" style="background-color: #FFFFFF; border-bottom: 1px solid #b8b8b8;">
+                        <ul id="objectList" class="selectorList"></ul>
+                        <a class="addbutton sprite-box" onclick="CM.objects.add(0)" title="add 3d shape"></a>
+                        <a class="addbutton sprite-text" onclick="CM.objects.add(1)" title="add 3d text"></a>
+                        <a class="addbutton sprite-shape" onclick="CM.objects.add(2)" title="add 3d model"></a>
+                    </div>
+                    <div style="position: absolute; top: 152px; left: 0; right: 0; bottom: 0; overflow-y: auto;" id="objectsproperties"></div>
+                </div>
+                <h3>FX</h3>
+                <div style="position: relative;">
+                    <div class="proprow" style="background-color: #FFFFFF; border-bottom: 1px solid #b8b8b8;">
+                        <ul id="fxList" class="selectorList"></ul>
+                        <select id="fxAddSelect" style="vertical-align: middle; width: 352px;">
+                            <option value="rgbshift">RGB Shift</option>
+                            <option value="colorify">Colorify</option>
+                            <option value="film">Film</option>
+                            <option value="dotscreen">Dot Screen</option>
+                            <option value="fxaa">Antialiasing (FXAA)</option>
+                            <option value="fisheye">Fisheye</option>
+                            <option value="negative">Color Negative</option>
+                        </select>
+                        <a style="vertical-align: middle;" class="addbutton sprite-add" onclick="CM.fx.add($('#fxAddSelect').val())" title="add fx"></a>
+                    </div>
+                    <div style="position: absolute; top: 153px; left: 0; right: 0; bottom: 0; overflow-y: auto;" id="postproperties"></div>
+                </div>
+                <h3>Camera Sequence</h3>
+                <div>
+                    <div id="camsequenceproperties"></div>
+                </div>
+                <h3>About</h3>
+                <div>
+                    <div style="margin: auto; width: 90%; margin-top: 15px; margin-bottom: 10px;">
+                        <span style="font-weight: bold;">Clipmaker 1.0</span><br/>
+                        Copyright 2015 Panzoid.<br/>
+                        <br/>
+                        <span style="font-weight: bold;"><a target="_blank" style="color: blue;" href="tools/feedback/">Send us your feedback</a>, we use it to make better things for you.</span><br/>
+                        <br/>
+                        <span style="font-size: 11px;">
+                            <a href="http://thenounproject.com/noun/pattern/#icon-No8750" target="_blank">Pattern</a> designed by <a href="http://thenounproject.com/Mikhail1986" target="_blank">Michael Rowe</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/design/#icon-No9350" target="_blank">Design</a> designed by <a href="http://thenounproject.com/iconify" target="_blank">Scott Lewis</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/back/#icon-No8301" target="_blank">Back</a> designed by <a href="http://thenounproject.com/chapmanjw" target="_blank">John Chapman</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/refresh/#icon-No2223" target="_blank">Refresh</a> designed by <a href="http://thenounproject.com/jorishoogendoorn" target="_blank">Joris Hoogendoorn</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/picture/#icon-No8206" target="_blank">Picture</a> designed by <a href="http://thenounproject.com/chrisclausie" target="_blank">Chris Clausen</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/text/#icon-No8326" target="_blank">Text</a> designed by <a href="http://thenounproject.com/HenrikLundMikkelsen" target="_blank">Henrik LM</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/dice/#icon-No454" target="_blank">Dice</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/crosshair/#icon-No5622" target="_blank">Crosshair</a> designed by <a href="http://thenounproject.com/naomiatkinson" target="_blank">Naomi Atkinson</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/center/#icon-No10629" target="_blank">Center</a> designed by <a href="http://thenounproject.com/alexfuller" target="_blank">Alex Fuller</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/play/#icon-No15109" target="_blank">Play</a> designed by <a href="http://thenounproject.com/bjorna1" target="_blank">Bj�rn Andersson</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/time/#icon-No6731" target="_blank">Time</a> designed by <a href="http://thenounproject.com/ristyled" target="_blank">Richard de Vos</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/last/#icon-No2828" target="_blank">Last</a> designed by <a href="http://thenounproject.com/somerandomdude" target="_blank">P.J. Onori</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/first/#icon-No2810" target="_blank">First</a> designed by <a href="http://thenounproject.com/somerandomdude" target="_blank">P.J. Onori</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/plus/#icon-No2876" target="_blank">Plus</a> designed by <a href="http://thenounproject.com/somerandomdude" target="_blank">P.J. Onori</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/arrow-right/#icon-No10547" target="_blank">Arrow Right</a> designed by <a href="http://thenounproject.com/alexfuller" target="_blank">Alex Fuller</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/box/#icon-No12848" target="_blank">Box</a> designed by <a href="http://thenounproject.com/Renee Ramsey-Passmore" target="_blank">Renee Ramsey-Passmore</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/text/#icon-No10607" target="_blank">Text</a> designed by <a href="http://thenounproject.com/alexfuller" target="_blank">Alex Fuller</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/light-bulb/#icon-No2654" target="_blank">Light Bulb</a> designed by <a href="http://thenounproject.com/mr.sheepman" target="_blank">Daniel Kano</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/smoke/#icon-No13564" target="_blank">Smoke</a> designed by <a href="http://thenounproject.com/sensibleworld" target="_blank">Jory Raphael</a> from The Noun Project<br/>
+                            <a href="http://thenounproject.com/noun/camera/#icon-No10611" target="_blank">Camera</a> designed by <a href="http://thenounproject.com/alexfuller" target="_blank">Alex Fuller</a> from The Noun Project<br/>
+                        </span>
+                        <br/>
+                        <br/>
+                        <a href="about/terms/" id="body_fTerms">Terms</a> | <a href="about/privacy/" id="body_fPrivacy">Privacy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="previewpane">
+            <div style="height: 90px; background-color: #444; top: 0; right: 0; left: 0; position: relative; overflow: hidden;">
+                <div style="float: left;">
+                    <script async src="pagead/js/adsbygoogle.js"></script>
+                    <!-- forum -->
+                    <ins class="adsbygoogle" style="display: inline-block; width: 728px; height: 90px" data-ad-client="ca-pub-8816130952124934" data-ad-slot="4078006153"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+                <div style="position: absolute; left: 732px; top: 7px; height: 73px; overflow: hidden;">
+                    <span class="st_facebook_vcount" displaytext="Facebook"></span>
+                    <span class="st_fblike_vcount" displaytext="Facebook Like"></span>
+                    <span class="st_twitter_vcount" displaytext="Tweet"></span>
+                    <span class="st_googleplus_vcount" displaytext="Google +"></span>
+                    <span class="st_pinterest_vcount" displaytext="Pinterest"></span>
+                    <span class="st_email_vcount" displaytext="Email"></span>
+                </div>
+            </div>
+            <div style="height: 25px; padding-top: 3px; font-family: 'Segoe UI',Verdana,Arial,sans-serif; text-align: center; font-size: 15px; background-color: #476F01; color: white; top: 0px; right: 0; left: 0; position: relative; overflow: hidden;">
+                You're using an old version of Clipmaker. <a href="tools/clipmaker/" target="_blank" style="color: white;">Click here to try Clipmaker 2.</a>
+            </div>
+            <canvas id="c_main"></canvas>
+            <div id="playbackarea" style="height: 60px; left: 0; top: auto; right: 0; bottom: 60px; position: absolute; background-color: #999; background-color: #FAFAFA; border-top: 1px solid #AAA;">
+                <span id="framecounter" style="top: 6px; color: #333; font-family: 'Segoe UI',Verdana,Arial,sans-serif; display: block; position: relative; left: 10px;">-/-</span>
+                <span id="timecounter" style="top: 8px; color: #333; font-family: 'Segoe UI',Verdana,Arial,sans-serif; display: block; position: relative; left: 10px;">0.00</span>
+                <a onclick="CM.toggleFrameRun();" title="play/pause video" class="sprite-playpause" style="left: 80px; top: 5px; cursor: pointer; position: absolute;"></a>
+                <a id="a_renderMode" title="render preview" onclick="CM.toggleRenderMode();" class="sprite-caminvert" style="background-color: #333333; left: 80px; top: 35px; cursor: pointer; position: absolute;"></a>
+                <div style="top: 4px; position: absolute; left: 130px; right: 20px; height: 50px" id="frameslider"></div>
+            </div>
+            <div style="height: 60px; background-color: #444; bottom: 0; right: 0; left: 0; position: absolute; overflow: hidden;">
+                <a id="dlbutton" class="button" style="float: left; margin: 10px;" onclick="CM.renderVideo();">Download Your Video
+                </a>
+                <div style="float: left;">
+                    <script async src="pagead/js/adsbygoogle.js"></script>
+                    <!-- top -->
+                    <ins class="adsbygoogle" style="display: inline-block; width: 468px; height: 60px" data-ad-client="ca-pub-8816130952124934" data-ad-slot="6924551190"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div id="renderdialog">
+            <span id="rendertitle">Rendering...</span>
+            <div id="renderprogress"></div>
+            <a onclick="window.open('download.aspx?appid=2', '_blank');" class="button" style="position: absolute; right: 6px; margin-top: 5px;" id="downloaddialog">Download</a>
+            <a onclick="CM.finishRender();" class="button" style="position: absolute; right: 132px; margin-top: 5px;" id="closedialog">Close</a>
+            <a onclick="CM.renderCancel=true;" class="button" style="position: absolute; right: 6px; margin-top: 5px;" id="cancelrender">Cancel</a>
+        </div>
+        <div id="mask">
+<center><font size="2">This is a free demo result from the <a href="http://www.waybackmachinedownloader.com/en/">Wayback Machine</a> Downloader. It is not a complete website.</font></center></body>
+</html>
